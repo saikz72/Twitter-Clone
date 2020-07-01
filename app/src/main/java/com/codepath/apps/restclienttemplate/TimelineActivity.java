@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.Toast;
 
 import com.codepath.apps.restclienttemplate.Adapters.TweetsAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
@@ -18,7 +19,6 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.parceler.Parcels;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,7 +54,6 @@ public class TimelineActivity extends AppCompatActivity {
         swipeContainer.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
             public void onRefresh() {
-                Log.i(TAG, "onRefresh: Fetching new data");
                 populateHomeTimeline();
             }
         });
@@ -68,18 +67,45 @@ public class TimelineActivity extends AppCompatActivity {
 
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);
         //recycler view setup : layout manager and the adapter
-        rvTweets.setLayoutManager(new LinearLayoutManager(this));
+        rvTweets.setLayoutManager(layoutManager);
         rvTweets.setAdapter(adapter);
 
-        scrollListener = new EndlessRecyclerViewScrollListener(new LinearLayoutManager(this)) {
+        scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-
+                Log.d(TAG, "onLoadMore: " + page);
+                loadMoreData();
             }
         };
 
+        //Adds the scroll listener to RecyclerView
+        rvTweets.addOnScrollListener(scrollListener);
 
         populateHomeTimeline();
+    }
+
+    private void loadMoreData() {
+        //1. Send an API request to retrieve appropriate paginated data
+        client.getNextPageOfTweets(new JsonHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Headers headers, JSON json) {
+                //2. Deserialize and construct new model objects from the API response
+                JSONArray jsonArray = json.jsonArray;
+                try {
+                    List<Tweet> tweets =  Tweet.fromJsonArray(jsonArray);
+                    //3. Append the new data objects to the existing set of items inside the array of items
+                    //4. Notify the adapter of the new items made with 'notifyItemRangeInserted()
+                    adapter.addAll(tweets);
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                Toast.makeText(TimelineActivity.this, "Sorry, could not load more data", Toast.LENGTH_LONG).show();
+            }
+        }, tweets.get(tweets.size() - 1).getId());
     }
 
     @Override
@@ -132,8 +158,7 @@ public class TimelineActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                Log.d(TAG, "onFailure: ", throwable);
-            }
+                Toast.makeText(TimelineActivity.this, "Error while populating timeline", Toast.LENGTH_LONG).show();            }
         });
     }
 }

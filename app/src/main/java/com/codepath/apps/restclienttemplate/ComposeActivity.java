@@ -4,10 +4,8 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.os.Parcel;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,7 +16,6 @@ import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONException;
-import org.parceler.Parcels;
 
 import okhttp3.Headers;
 
@@ -82,7 +79,7 @@ public class ComposeActivity extends AppCompatActivity {
                             Tweet tweet =  Tweet.fromJson(json.jsonObject);
                             Intent intent = new Intent();
                             intent.putExtra("tweet", tweet);
-                            setResult(RESULT_OK);   //set result code and bundle data for response
+                            setResult(RESULT_OK, intent);   //set result code and bundle data for response
                             finish();   //closes the activity
                         } catch (JSONException e) {
                             e.printStackTrace();
@@ -91,8 +88,7 @@ public class ComposeActivity extends AppCompatActivity {
 
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-                        Log.e(TAG, "onFailure: ", throwable);
-                    }
+                        Toast.makeText(ComposeActivity.this, "Error while publishing tweet", Toast.LENGTH_LONG).show();                    }
                 });
             }
         });

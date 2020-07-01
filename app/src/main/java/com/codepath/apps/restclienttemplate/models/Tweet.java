@@ -14,7 +14,10 @@ import java.util.List;
 public class Tweet implements Parcelable {
     private String body;
     private String createdAt;
+    private long id;
     private User user;
+
+
 
     public Tweet() {
     }
@@ -55,6 +58,7 @@ public class Tweet implements Parcelable {
         tweet.body = jsonObject.getString("text");
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
+        tweet.id = jsonObject.getLong("id");
         return tweet;
     }
 
@@ -77,5 +81,7 @@ public class Tweet implements Parcelable {
     public User getUser() {
         return user;
     }
-
+    public long getId() {
+        return id;
+    }
 }
