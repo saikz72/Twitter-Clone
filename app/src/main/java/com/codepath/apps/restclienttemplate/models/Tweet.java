@@ -2,6 +2,7 @@ package com.codepath.apps.restclienttemplate.models;
 
 import android.os.Parcel;
 import android.os.Parcelable;
+import android.util.Log;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -16,7 +17,7 @@ public class Tweet implements Parcelable {
     private String createdAt;
     private long id;
     private User user;
-
+    private String media;
 
 
     public Tweet() {
@@ -26,6 +27,22 @@ public class Tweet implements Parcelable {
         body = in.readString();
         createdAt = in.readString();
         user = in.readParcelable(User.class.getClassLoader());
+        media = in.readString();
+    }
+    public String getBody() {
+        return body;
+    }
+    public String getCreatedAt() {
+        return createdAt;
+    }
+    public User getUser() {
+        return user;
+    }
+    public long getId() {
+        return id;
+    }
+    public String getMedia(){
+        return media;
     }
 
     public static final Creator<Tweet> CREATOR = new Creator<Tweet>() {
@@ -50,6 +67,7 @@ public class Tweet implements Parcelable {
         dest.writeString(body);
         dest.writeString(createdAt);
         dest.writeParcelable(user, flags);
+        dest.writeString(media);
     }
 
 
@@ -59,6 +77,16 @@ public class Tweet implements Parcelable {
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
         tweet.id = jsonObject.getLong("id");
+
+        JSONObject entities = jsonObject.getJSONObject("entities");
+        if(entities.has("media")){
+            JSONArray medias =  entities.getJSONArray("media");
+            JSONObject object2 = (JSONObject) medias.get(0);
+            tweet.media = object2.getString("media_url_https");
+
+        } else {
+            tweet.media = "";
+        }
         return tweet;
     }
 
@@ -70,18 +98,5 @@ public class Tweet implements Parcelable {
         return tweets;
     }
 
-    public String getBody() {
-        return body;
-    }
 
-    public String getCreatedAt() {
-        return createdAt;
-    }
-
-    public User getUser() {
-        return user;
-    }
-    public long getId() {
-        return id;
-    }
 }

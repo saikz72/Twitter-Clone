@@ -19,7 +19,7 @@
         android:layout_marginEnd="5dp"
         android:ems="10"
         android:gravity="start|top"
-        android:hint="What's happening"
+        android:hint="What's happening?"
         android:inputType="textMultiLine"
         android:minLines="5" />
 
