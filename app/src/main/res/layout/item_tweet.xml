@@ -2,7 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+    android:layout_width="wrap_content"
     android:layout_height="wrap_content"
     android:layout_margin="5dp"
     android:background="@drawable/border">
@@ -50,14 +50,12 @@
 
     <ImageView
         android:id="@+id/ivMedia"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/tvBody"
         android:layout_alignStart="@+id/tvBody"
-        android:layout_alignParentEnd="true"
-        android:layout_marginStart="4dp"
-        android:layout_marginTop="5dp"
-        android:layout_marginEnd="5dp"
+        android:layout_marginStart="1dp"
+        android:layout_marginTop="1dp"
         tools:srcCompat="@tools:sample/avatars" />
 
     <TextView
