@@ -1,6 +1,8 @@
 package com.codepath.apps.restclienttemplate.Adapters;
 
 import android.content.Context;
+import android.content.Intent;
+import android.os.Parcel;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,6 +18,8 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
+import com.codepath.apps.restclienttemplate.ReplyActivity;
+import com.codepath.apps.restclienttemplate.TweetDetailsActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 
 import java.text.ParseException;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder> {
+    public static final String TAG = "TweetsAdapter";
     Context context;
     List<Tweet> tweets;
 
@@ -64,27 +69,41 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         return tweets.size();
     }
 
-    public class ViewHolder extends RecyclerView.ViewHolder{
+    public class ViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
         private ImageView ivProfileImage;
         private TextView tvBody;
         private TextView tvScreenName;
         private TextView tvTimeStamp;
         private ImageView ivMedia;
+        private ImageView ivReply;
+        private ImageView ivRetweet;
+        private ImageView ivLike;
+        private TextView tvLikeCount;
+        private TextView tvRetweetCount;
+        private TextView tvUserName;
 
-        public ViewHolder(@NonNull View itemView) {
+        public ViewHolder(@NonNull View itemView)  {
             super(itemView);
             ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
             tvBody = itemView.findViewById(R.id.tvBody);
             tvScreenName = itemView.findViewById(R.id.tvScreenName);
             tvTimeStamp = itemView.findViewById(R.id.tvTimeStamp);
             ivMedia = itemView.findViewById(R.id.ivMedia);
+            ivLike = itemView.findViewById(R.id.ivLike);
+            ivReply = itemView.findViewById(R.id.ivReply);
+            ivRetweet = itemView.findViewById(R.id.ivRetweet);
+            tvRetweetCount = itemView.findViewById(R.id.tvRetweetCount);
+            tvLikeCount = itemView.findViewById(R.id.tvLikeCount);
+            tvUserName = itemView.findViewById(R.id.tvUserName);
+            itemView.setOnClickListener(this);
         }
 
         public void bind(Tweet tweet) {
             tvBody.setText(tweet.getBody());
-            tvScreenName.setText(tweet.getUser().getScreenName());
+            tvScreenName.setText("@" +tweet.getUser().getScreenName());
             Glide.with(context).load(tweet.getUser().getProfileImageUrl()).into(ivProfileImage);
             tvTimeStamp.setText(getRelativeTimeAgo(tweet.getCreatedAt()));
+            tvUserName.setText( tweet.getUser().getName());
             // populate any embedded media with glide
             Log.i("hello",tweet.getMedia());
             if (!tweet.getMedia().equals("")) { //media exist
@@ -97,6 +116,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             } else {
                 ivMedia.setVisibility(View.GONE);
             }
+
         }
 
         public String getRelativeTimeAgo(String rawJsonDate) {
@@ -113,6 +133,31 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 e.printStackTrace();
             }
             return relativeDate;
+        }
+
+        @Override
+        public void onClick(View v) {
+            Log.d(TAG, "onClick: djd");
+            //gets item position
+            int position = getAdapterPosition();
+            // make sure the position is valid, i.e. actually exists in the view
+            if (position != RecyclerView.NO_POSITION) {
+                // get the movie at the position, this won't work if the class is static
+                Tweet tweet = tweets.get(position);
+                // create intent for the new activity
+                Intent intent = new Intent(context, TweetDetailsActivity.class);
+                // serialize the movie using parceler, use its short name as a key
+                intent.putExtra(Tweet.class.getSimpleName(), tweet);
+                // show the activity
+                context.startActivity(intent);
+            }
+        }
+
+        //creates an intent to reply tweet
+        private void replyTweet(Tweet tweet){
+            Intent intent = new Intent(context, ReplyActivity.class);
+            intent.putExtra("tweet", tweet);
+            context.startActivity(intent);
         }
     }
 }

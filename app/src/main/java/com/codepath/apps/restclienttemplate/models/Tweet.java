@@ -1,8 +1,12 @@
 package com.codepath.apps.restclienttemplate.models;
 
+import android.content.Context;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.util.Log;
+
+import com.codepath.apps.restclienttemplate.TwitterApp;
+import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,6 +22,13 @@ public class Tweet implements Parcelable {
     private long id;
     private User user;
     private String media;
+    private long likeCount;
+    private boolean liked;
+    private long retweetCount;
+    private boolean retweeted;
+    private long uid;
+
+
 
 
     public Tweet() {
@@ -28,6 +39,8 @@ public class Tweet implements Parcelable {
         createdAt = in.readString();
         user = in.readParcelable(User.class.getClassLoader());
         media = in.readString();
+        likeCount = in.readLong();
+        retweetCount = in.readLong();
     }
     public String getBody() {
         return body;
@@ -62,12 +75,22 @@ public class Tweet implements Parcelable {
         return 0;
     }
 
+    public long getLikeCount() {
+        return likeCount;
+    }
+
+    public long getRetweetCount() {
+        return retweetCount;
+    }
+
     @Override
     public void writeToParcel(Parcel dest, int flags) {
         dest.writeString(body);
         dest.writeString(createdAt);
         dest.writeParcelable(user, flags);
         dest.writeString(media);
+        dest.writeLong(retweetCount);
+        dest.writeLong(likeCount);
     }
 
 
@@ -77,13 +100,16 @@ public class Tweet implements Parcelable {
         tweet.createdAt = jsonObject.getString("created_at");
         tweet.user = User.fromJson(jsonObject.getJSONObject("user"));
         tweet.id = jsonObject.getLong("id");
+        tweet.likeCount = jsonObject.getLong("favorite_count");
+        tweet.liked = jsonObject.getBoolean("favorited");
+        tweet.retweetCount = jsonObject.getLong("retweet_count");
+        tweet.retweeted = jsonObject.getBoolean("retweeted");
 
         JSONObject entities = jsonObject.getJSONObject("entities");
         if(entities.has("media")){
             JSONArray medias =  entities.getJSONArray("media");
             JSONObject object2 = (JSONObject) medias.get(0);
             tweet.media = object2.getString("media_url_https");
-
         } else {
             tweet.media = "";
         }
@@ -98,5 +124,14 @@ public class Tweet implements Parcelable {
         return tweets;
     }
 
+    public void switchFavorite(Context context, JsonHttpResponseHandler handler) {
+        TwitterApp.getRestClient(context).favoriteTweet(liked = !liked, uid, handler);
+        likeCount += (liked ? 1 : -1);
+    }
+
+    public void switchRetweet(Context context, JsonHttpResponseHandler handler) {
+        TwitterApp.getRestClient(context).retweetTweet(retweeted = !retweeted, uid, handler);
+        retweetCount += (retweeted ? 1 : -1);
+    }
 
 }

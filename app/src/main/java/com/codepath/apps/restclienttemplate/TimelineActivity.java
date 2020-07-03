@@ -20,6 +20,7 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,10 @@ public class TimelineActivity extends AppCompatActivity {
     TweetsAdapter adapter;
     SwipeRefreshLayout swipeContainer;
     EndlessRecyclerViewScrollListener scrollListener;
+    MenuItem miActionProgressItem;  //instance of the progress action-view
+    public static final String RESULT_KEY = "result_tweet";
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -77,14 +82,13 @@ public class TimelineActivity extends AppCompatActivity {
         scrollListener = new EndlessRecyclerViewScrollListener(layoutManager) {
             @Override
             public void onLoadMore(int page, int totalItemsCount, RecyclerView view) {
-                Log.d(TAG, "onLoadMore: " + page);
                 loadMoreData();
             }
         };
 
         //Adds the scroll listener to RecyclerView
         rvTweets.addOnScrollListener(scrollListener);
-
+        Log.d(TAG, "1");
         populateHomeTimeline();
     }
 
@@ -130,6 +134,24 @@ public class TimelineActivity extends AppCompatActivity {
         }
         return super.onOptionsItemSelected(item);
     }
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        Log.d(TAG, "2");
+        // Store instance of the menu item containing progress
+        miActionProgressItem = menu.findItem(R.id.miActionProgress);
+
+        // Return to finish
+        return super.onPrepareOptionsMenu(menu);
+    }
+    //show progress bar when api is fetching data
+    public void showProgressBar(){
+        miActionProgressItem.setVisible(true);
+    }
+
+    //hide progress bar when data is fetched
+    public void hideProgressBar(){
+        miActionProgressItem.setVisible(false);
+    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -141,6 +163,7 @@ public class TimelineActivity extends AppCompatActivity {
             tweets.add(0, tweet);
             //update the adapter
             adapter.notifyItemInserted(0);
+            rvTweets.scrollToPosition(0);
         }
         super.onActivityResult(requestCode, resultCode, data);
     }
@@ -149,15 +172,10 @@ public class TimelineActivity extends AppCompatActivity {
         client.getHomeTimeline(new JsonHttpResponseHandler() {
             @Override
             public void onSuccess(int statusCode, Headers headers, JSON json) {
+                showProgressBar();
                 JSONArray jsonArray = json.jsonArray;
-                try{
-                    adapter.clear();
-                    adapter.addAll(Tweet.fromJsonArray(jsonArray));
-                    swipeContainer.setRefreshing(false);  // Now we call setRefreshing(false) to signal refresh has finished
-
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
+                updateTimeline(jsonArray);
+                hideProgressBar();
             }
 
             @Override
@@ -165,4 +183,16 @@ public class TimelineActivity extends AppCompatActivity {
                 Toast.makeText(TimelineActivity.this, "Error while populating timeline", Toast.LENGTH_LONG).show();            }
         });
     }
+    private void updateTimeline(JSONArray jsonArray){
+        try{
+            adapter.clear();
+            adapter.addAll(Tweet.fromJsonArray(jsonArray));
+            swipeContainer.setRefreshing(false);  // Now we call setRefreshing(false) to signal refresh has finished
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+    }
+
+
 }
