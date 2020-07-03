@@ -12,6 +12,8 @@ import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
 import com.codepath.apps.restclienttemplate.Adapters.TweetsAdapter;
+import com.codepath.apps.restclienttemplate.databinding.ActivityTimelineBinding;
+import com.codepath.apps.restclienttemplate.databinding.ActivityTweetDetailsBinding;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
@@ -40,20 +42,22 @@ public class TweetDetailsActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_tweet_details);
+        ActivityTweetDetailsBinding binding = ActivityTweetDetailsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
         client = TwitterApp.getRestClient(this);
 
-        ivProfileImage = findViewById(R.id.ivProfileImage);
-        tvBody = findViewById(R.id.tvBody);
-        tvScreenName = findViewById(R.id.tvScreenName);
-        tvTimeStamp = findViewById(R.id.tvTimeStamp);
-        ivMedia = findViewById(R.id.ivMedia);
-        ivReply = findViewById(R.id.ivReply);
-        ivFavorite = findViewById(R.id.ivFavorite);
-        tvFavoriteCount = findViewById(R.id.tvFavoriteCount);
-        tvRetweetCount = findViewById(R.id.tvRetweetCount);
-        ivRetweet = findViewById(R.id.ivRetweet);
-        tvUsername = findViewById(R.id.tvUsername);
+        ivProfileImage = binding.ivProfileImage;
+        tvBody = binding.tvBody;
+        tvScreenName = binding.tvScreenName;
+        tvTimeStamp =binding.tvTimeStamp;
+        ivMedia = binding.ivMedia;
+        ivReply = binding.ivReply;
+        ivFavorite = binding.ivFavorite;
+        tvFavoriteCount = binding.tvFavoriteCount;
+        tvRetweetCount = binding.tvRetweetCount;
+        ivRetweet = binding.ivRetweet;
+        tvUsername = binding.tvUsername;
 
         tweet = getIntent().getParcelableExtra(Tweet.class.getSimpleName());
         tvBody.setText(tweet.getBody());
@@ -64,18 +68,60 @@ public class TweetDetailsActivity extends AppCompatActivity {
         setButton(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
         tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
         tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
-        Glide.with (this)
+        Glide.with(this)
                 .load(tweet.getUser().getProfileImageUrl())
                 //.bitmapTransform(new RoundedCornersTransformation(this, 30, 0))
                 .into(ivProfileImage);
-        if(!tweet.getMedia().equals("")) {
+        if (!tweet.getMedia().equals("")) {
             Glide.with(this)
                     .load(tweet.getMedia())
-                   // .bitmapTransform(new RoundedCornersTransformation(this, 10, 0))
+                    // .bitmapTransform(new RoundedCornersTransformation(this, 10, 0))
                     .into(ivMedia);
         }
 
+
+        // enable favorite button
+        ivFavorite.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tweet.switchFavorite(TweetDetailsActivity.this, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Headers headers, JSON json) {
+
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+
+                    }
+                });
+                setButton(ivFavorite, tweet.isLiked(),
+                        R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
+                tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
+            }
+        });
+        // enable retweet button
+        ivRetweet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                tweet.switchRetweet(TweetDetailsActivity.this, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Headers headers, JSON json) {
+
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+
+                    }
+                });
+                setButton(ivRetweet, tweet.isRetweeted(),
+                        R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+                tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
+            }
+        });
     }
+
 
     // sets the color of a button, depending on whether it is active
     private void setButton(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {

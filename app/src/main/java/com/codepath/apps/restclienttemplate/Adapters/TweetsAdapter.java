@@ -2,8 +2,6 @@ package com.codepath.apps.restclienttemplate.Adapters;
 
 import android.content.Context;
 import android.content.Intent;
-import android.os.Parcel;
-import android.text.format.DateUtils;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -19,16 +17,12 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.bitmap.RoundedCorners;
 import com.bumptech.glide.request.RequestOptions;
 import com.codepath.apps.restclienttemplate.R;
-import com.codepath.apps.restclienttemplate.ReplyActivity;
 import com.codepath.apps.restclienttemplate.TimelineActivity;
 import com.codepath.apps.restclienttemplate.TweetDetailsActivity;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.List;
-import java.util.Locale;
 
 import okhttp3.Headers;
 
@@ -58,7 +52,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 tweet.switchFavorite(context, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
-
+                        Log.d(TAG, "onSuccess: Pressed");
                     }
 
                     @Override
@@ -68,6 +62,28 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 });
                 setButton(viewHolder.ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
                 viewHolder.tvFavoriteCount.setText(String.format("%d", tweet.getLikeCount()));
+            }
+        });
+        // enable retweet button
+        viewHolder.ivRetweet.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                int position = viewHolder.getAdapterPosition();
+                Tweet tweet = tweets.get(position);
+                tweet.switchRetweet(context, new JsonHttpResponseHandler() {
+                    @Override
+                    public void onSuccess(int statusCode, Headers headers, JSON json) {
+                        Log.d(TAG, "onSuccess: retwet");
+                    }
+
+                    @Override
+                    public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+
+                    }
+                });
+                setButton(viewHolder.ivRetweet, tweet.isRetweeted(),
+                        R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+                viewHolder.tvRetweetCount.setText(String.format("%d", tweet.getRetweetCount()));
             }
         });
         return viewHolder;
@@ -122,6 +138,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
 
         public ViewHolder(@NonNull View itemView)  {
             super(itemView);
+
             ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
             tvBody = itemView.findViewById(R.id.tvBody);
             tvScreenName = itemView.findViewById(R.id.tvScreenName);
@@ -198,11 +215,5 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             }
         }
 
-        //creates an intent to reply tweet
-        private void replyTweet(Tweet tweet){
-            Intent intent = new Intent(context, ReplyActivity.class);
-            intent.putExtra("tweet", tweet);
-            context.startActivity(intent);
-        }
     }
 }
