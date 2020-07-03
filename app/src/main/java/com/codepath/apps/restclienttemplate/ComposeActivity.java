@@ -20,6 +20,8 @@ import org.json.JSONException;
 import okhttp3.Headers;
 
 public class ComposeActivity extends AppCompatActivity {
+    public static final int REQUEST_CODE = 0; // request code
+
     public static final int MAX_TWEET_LENGTH = 140;
     EditText etCompose;
     Button btnTweet;
@@ -57,6 +59,9 @@ public class ComposeActivity extends AppCompatActivity {
 
             }
         });
+
+        String reply = getIntent().getStringExtra("reply");
+        etCompose.setText(reply);
 
         //set click listener on button
         btnTweet.setOnClickListener(new View.OnClickListener() {

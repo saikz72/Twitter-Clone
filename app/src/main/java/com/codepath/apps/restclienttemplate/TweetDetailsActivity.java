@@ -1,6 +1,7 @@
 package com.codepath.apps.restclienttemplate;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
 import android.content.Intent;
 import android.graphics.Color;
@@ -10,6 +11,7 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.bumptech.glide.Glide;
+import com.codepath.apps.restclienttemplate.Adapters.TweetsAdapter;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
@@ -26,8 +28,8 @@ public class TweetDetailsActivity extends AppCompatActivity {
     private ImageView ivMedia;
     private ImageView ivReply;
     private ImageView ivRetweet;
-    private ImageView ivLike;
-    private TextView tvLikeCount;
+    private ImageView ivFavorite;
+    private TextView tvFavoriteCount;
     private TextView tvRetweetCount;
     private TextView tvUsername;
 
@@ -39,7 +41,6 @@ public class TweetDetailsActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_tweet_details);
-        isTapped = false;
         client = TwitterApp.getRestClient(this);
 
         ivProfileImage = findViewById(R.id.ivProfileImage);
@@ -48,17 +49,21 @@ public class TweetDetailsActivity extends AppCompatActivity {
         tvTimeStamp = findViewById(R.id.tvTimeStamp);
         ivMedia = findViewById(R.id.ivMedia);
         ivReply = findViewById(R.id.ivReply);
-        ivLike = findViewById(R.id.ivLike);
-        tvLikeCount = findViewById(R.id.tvLikeCount);
+        ivFavorite = findViewById(R.id.ivFavorite);
+        tvFavoriteCount = findViewById(R.id.tvFavoriteCount);
         tvRetweetCount = findViewById(R.id.tvRetweetCount);
         ivRetweet = findViewById(R.id.ivRetweet);
-        tvUsername = findViewById(R.id.tvUserName);
+        tvUsername = findViewById(R.id.tvUsername);
 
         tweet = getIntent().getParcelableExtra(Tweet.class.getSimpleName());
         tvBody.setText(tweet.getBody());
         tvUsername.setText(tweet.getUser().getName());
 
-
+        tvTimeStamp.setText(tweet.getRelativeTimeAgo(tweet.getCreatedAt()));
+        setButton(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
+        setButton(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+        tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
+        tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
         Glide.with (this)
                 .load(tweet.getUser().getProfileImageUrl())
                 //.bitmapTransform(new RoundedCornersTransformation(this, 30, 0))
@@ -69,54 +74,13 @@ public class TweetDetailsActivity extends AppCompatActivity {
                    // .bitmapTransform(new RoundedCornersTransformation(this, 10, 0))
                     .into(ivMedia);
         }
-        likeTapped();
-        reTweet();
 
     }
 
-    public void sendRetweet(){
-        client.publishTweet(tvBody.getText().toString(), new JsonHttpResponseHandler() {
-            @Override
-            public void onSuccess(int statusCode, Headers headers, JSON json) {
-                try {
-                    Tweet tweet =  Tweet.fromJson(json.jsonObject);
-                    Intent intent = new Intent();
-                    intent.putExtra("tweet", tweet);
-                    setResult(RESULT_OK, intent);   //set result code and bundle data for response
-                    finish();   //closes the activity
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-            }
-
-            @Override
-            public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-
-            }
-        });
+    // sets the color of a button, depending on whether it is active
+    private void setButton(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {
+        iv.setImageResource(isActive ? fillResId : strokeResId);
+        iv.setColorFilter(ContextCompat.getColor(this, isActive ? activeColor : R.color.medium_gray));
     }
-    private void reTweet(){
-        ivRetweet.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                sendRetweet();
-            }
-        });
-    }
-    private void likeTapped() {
-        ivLike.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(!isTapped) {
-                    //ivLike.setColorFilter(getResources().getColor(R.color));
-                    ivLike.setColorFilter(Color.RED);
-                    isTapped = true;
-                } else {
-                    ivLike.setColorFilter(Color.DKGRAY);
-                    isTapped = false;
-                }
-            }
-        });
-    }
-
 }
+

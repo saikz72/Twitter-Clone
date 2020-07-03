@@ -88,7 +88,6 @@ public class TimelineActivity extends AppCompatActivity {
 
         //Adds the scroll listener to RecyclerView
         rvTweets.addOnScrollListener(scrollListener);
-        Log.d(TAG, "1");
         populateHomeTimeline();
     }
 
@@ -192,6 +191,12 @@ public class TimelineActivity extends AppCompatActivity {
         } catch (JSONException e) {
             e.printStackTrace();
         }
+    }
+    // call send an intent with any additional reply text to ComposeActivity
+    public void composeReply(String text) {
+        Intent intent = new Intent(TimelineActivity.this, ComposeActivity.class);
+        intent.putExtra("reply", text);
+        startActivityForResult(intent, ComposeActivity.REQUEST_CODE);
     }
 
 
