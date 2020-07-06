@@ -37,48 +37,12 @@ public class TweetDetailsActivity extends AppCompatActivity {
 
     private Tweet tweet;
     private TwitterClient client;
-    private boolean isTapped;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        ActivityTweetDetailsBinding binding = ActivityTweetDetailsBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        client = TwitterApp.getRestClient(this);
-
-        ivProfileImage = binding.ivProfileImage;
-        tvBody = binding.tvBody;
-        tvScreenName = binding.tvScreenName;
-        tvTimeStamp =binding.tvTimeStamp;
-        ivMedia = binding.ivMedia;
-        ivReply = binding.ivReply;
-        ivFavorite = binding.ivFavorite;
-        tvFavoriteCount = binding.tvFavoriteCount;
-        tvRetweetCount = binding.tvRetweetCount;
-        ivRetweet = binding.ivRetweet;
-        tvUsername = binding.tvUsername;
-
-        tweet = getIntent().getParcelableExtra(Tweet.class.getSimpleName());
-        tvBody.setText(tweet.getBody());
-        tvUsername.setText(tweet.getUser().getName());
-
-        tvTimeStamp.setText(tweet.getRelativeTimeAgo(tweet.getCreatedAt()));
-        setButton(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
-        setButton(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
-        tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
-        tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
-        Glide.with(this)
-                .load(tweet.getUser().getProfileImageUrl())
-                //.bitmapTransform(new RoundedCornersTransformation(this, 30, 0))
-                .into(ivProfileImage);
-        if (!tweet.getMedia().equals("")) {
-            Glide.with(this)
-                    .load(tweet.getMedia())
-                    // .bitmapTransform(new RoundedCornersTransformation(this, 10, 0))
-                    .into(ivMedia);
-        }
-
+        setView();
+        bind();
 
         // enable favorite button
         ivFavorite.setOnClickListener(new View.OnClickListener() {
@@ -95,7 +59,7 @@ public class TweetDetailsActivity extends AppCompatActivity {
 
                     }
                 });
-                setButton(ivFavorite, tweet.isLiked(),
+                setButtonColor(ivFavorite, tweet.isLiked(),
                         R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
                 tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
             }
@@ -115,7 +79,7 @@ public class TweetDetailsActivity extends AppCompatActivity {
 
                     }
                 });
-                setButton(ivRetweet, tweet.isRetweeted(),
+                setButtonColor(ivRetweet, tweet.isRetweeted(),
                         R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
                 tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
             }
@@ -124,9 +88,49 @@ public class TweetDetailsActivity extends AppCompatActivity {
 
 
     // sets the color of a button, depending on whether it is active
-    private void setButton(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {
+    private void setButtonColor(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {
         iv.setImageResource(isActive ? fillResId : strokeResId);
         iv.setColorFilter(ContextCompat.getColor(this, isActive ? activeColor : R.color.medium_gray));
+    }
+    //sets the view
+    public void setView(){
+        ActivityTweetDetailsBinding binding = ActivityTweetDetailsBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+        ivProfileImage = binding.ivProfileImage;
+        tvBody = binding.tvBody;
+        tvScreenName = binding.tvScreenName;
+        tvTimeStamp =binding.tvTimeStamp;
+        ivMedia = binding.ivMedia;
+        ivReply = binding.ivReply;
+        ivFavorite = binding.ivFavorite;
+        tvFavoriteCount = binding.tvFavoriteCount;
+        tvRetweetCount = binding.tvRetweetCount;
+        ivRetweet = binding.ivRetweet;
+        tvUsername = binding.tvUsername;
+    }
+
+    //binds view with content
+    public void bind(){
+        client = TwitterApp.getRestClient(this);
+        tweet = getIntent().getParcelableExtra(Tweet.class.getSimpleName());
+        tvBody.setText(tweet.getBody());
+        tvUsername.setText(tweet.getUser().getName());
+        tvScreenName.setText(tweet.getUser().getScreenName());
+        tvTimeStamp.setText(tweet.getRelativeTimeAgo(tweet.getCreatedAt()));
+        setButtonColor(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
+        setButtonColor(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+        tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
+        tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
+        Glide.with(this)
+                .load(tweet.getUser().getProfileImageUrl())
+                //.bitmapTransform(new RoundedCornersTransformation(this, 30, 0))
+                .into(ivProfileImage);
+        if (!tweet.getMedia().equals("")) {
+            Glide.with(this)
+                    .load(tweet.getMedia())
+                    // .bitmapTransform(new RoundedCornersTransformation(this, 10, 0))
+                    .into(ivMedia);
+        }
     }
 }
 

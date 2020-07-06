@@ -12,6 +12,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.codepath.apps.restclienttemplate.databinding.ActivityComposeBinding;
 import com.codepath.apps.restclienttemplate.models.Tweet;
 import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
@@ -21,24 +22,28 @@ import okhttp3.Headers;
 
 public class ComposeActivity extends AppCompatActivity {
     public static final int REQUEST_CODE = 0; // request code
+    private static final String TAG = "ComposeActivity";
+    public static final String intentKeyfromReply = "reply";
+    public static final String intentKeyFromCompose = "tweet";
 
     public static final int MAX_TWEET_LENGTH = 140;
     EditText etCompose;
     Button btnTweet;
     TextView tvTweetCount;
     TwitterClient client;
-    public static final String TAG = "ComposeActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_compose);
+
+        ActivityComposeBinding binding = ActivityComposeBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         client = TwitterApp.getRestClient(this);
 
-        etCompose = findViewById(R.id.etCompose);
-        btnTweet = findViewById(R.id.btnTweet);
-        tvTweetCount = findViewById(R.id.tvTweetCount);
+        etCompose =binding.etCompose;
+        btnTweet =binding.btnTweet;
+        tvTweetCount = binding.tvTweetCount;
 
         //listener to display the character count left as user types in new tweet
         etCompose.addTextChangedListener(new TextWatcher() {
@@ -60,7 +65,7 @@ public class ComposeActivity extends AppCompatActivity {
             }
         });
 
-        String reply = getIntent().getStringExtra("reply");
+        String reply = getIntent().getStringExtra(intentKeyfromReply);
         etCompose.setText(reply);
 
         //set click listener on button
@@ -83,7 +88,7 @@ public class ComposeActivity extends AppCompatActivity {
                         try {
                             Tweet tweet =  Tweet.fromJson(json.jsonObject);
                             Intent intent = new Intent();
-                            intent.putExtra("tweet", tweet);
+                            intent.putExtra(intentKeyFromCompose, tweet);
                             setResult(RESULT_OK, intent);   //set result code and bundle data for response
                             finish();   //closes the activity
                         } catch (JSONException e) {

@@ -21,7 +21,6 @@ import com.codepath.asynchttpclient.callback.JsonHttpResponseHandler;
 
 import org.json.JSONArray;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +29,9 @@ import okhttp3.Headers;
 
 public class TimelineActivity extends AppCompatActivity {
 
-    public static final String TAG = "TimelineActivity";
-    private final int REQUEST_CODE = 20;
+    public final int REQUEST_CODE = 20;
+    private static final String TAG = "TimelineActivity";
+    private static final String RESULT_KEY = "result_tweet";
 
     TwitterClient client;
     RecyclerView rvTweets;
@@ -40,14 +40,12 @@ public class TimelineActivity extends AppCompatActivity {
     SwipeRefreshLayout swipeContainer;
     EndlessRecyclerViewScrollListener scrollListener;
     MenuItem miActionProgressItem;  //instance of the progress action-view
-    public static final String RESULT_KEY = "result_tweet";
 
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         ActivityTimelineBinding binding = ActivityTimelineBinding.inflate(getLayoutInflater());
-
         setContentView(binding.getRoot());
 
         Toolbar toolbar = binding.toolbar;
@@ -103,9 +101,7 @@ public class TimelineActivity extends AppCompatActivity {
                 JSONArray jsonArray = json.jsonArray;
                 try {
                     List<Tweet> tweets =  Tweet.fromJsonArray(jsonArray);
-                    //3. Append the new data objects to the existing set of items inside the array of items
-                    //4. Notify the adapter of the new items made with 'notifyItemRangeInserted()
-                    adapter.addAll(tweets);
+                    adapter.addAll(tweets); //3. Append the new data objects to the existing set of items inside the array of items && 4. Notify the adapter of the new items made with 'notifyItemRangeInserted()
                 } catch (JSONException e) {
                     e.printStackTrace();
                 }
@@ -141,7 +137,6 @@ public class TimelineActivity extends AppCompatActivity {
         Log.d(TAG, "2");
         // Store instance of the menu item containing progress
         miActionProgressItem = menu.findItem(R.id.miActionProgress);
-
         // Return to finish
         return super.onPrepareOptionsMenu(menu);
     }
@@ -159,7 +154,7 @@ public class TimelineActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         if(requestCode == REQUEST_CODE && resultCode == RESULT_OK){
             //get data from the intent (tweet)
-             Tweet tweet = data.getParcelableExtra("tweet");
+             Tweet tweet = data.getParcelableExtra(ComposeActivity.intentKeyFromCompose);
             //update the rv with the tweet
             //modify data source of tweets
             tweets.add(0, tweet);
@@ -198,7 +193,7 @@ public class TimelineActivity extends AppCompatActivity {
     // call send an intent with any additional reply text to ComposeActivity
     public void composeReply(String text) {
         Intent intent = new Intent(TimelineActivity.this, ComposeActivity.class);
-        intent.putExtra("reply", text);
+        intent.putExtra(ComposeActivity.intentKeyfromReply, text);
         startActivityForResult(intent, ComposeActivity.REQUEST_CODE);
     }
 

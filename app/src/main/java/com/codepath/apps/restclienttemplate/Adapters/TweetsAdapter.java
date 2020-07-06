@@ -27,7 +27,7 @@ import java.util.List;
 import okhttp3.Headers;
 
 public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder> {
-    public static final String TAG = "TweetsAdapter";
+    private static final String TAG = "TweetsAdapter";
     Context context;
     List<Tweet> tweets;
 
@@ -41,7 +41,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
     @Override
     public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         final View view = LayoutInflater.from(context).inflate(R.layout.item_tweet, parent, false);
-        final ViewHolder viewHolder =   new ViewHolder(view);
+        final ViewHolder viewHolder =  new ViewHolder(view);
 
         //listener for when like button clicked
         viewHolder.ivFavorite.setOnClickListener(new View.OnClickListener() {
@@ -52,15 +52,13 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 tweet.switchFavorite(context, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        Log.d(TAG, "onSuccess: Pressed");
                     }
 
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
-
                     }
                 });
-                setButton(viewHolder.ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
+                setButtonColor(viewHolder.ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
                 viewHolder.tvFavoriteCount.setText(String.format("%d", tweet.getLikeCount()));
             }
         });
@@ -73,7 +71,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
                 tweet.switchRetweet(context, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        Log.d(TAG, "onSuccess: retwet");
+                        Log.d(TAG, "onSuccess: retweet");
                     }
 
                     @Override
@@ -81,7 +79,7 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
 
                     }
                 });
-                setButton(viewHolder.ivRetweet, tweet.isRetweeted(),
+                setButtonColor(viewHolder.ivRetweet, tweet.isRetweeted(),
                         R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
                 viewHolder.tvRetweetCount.setText(String.format("%d", tweet.getRetweetCount()));
             }
@@ -89,11 +87,10 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         return viewHolder;
     }
     // sets the color of a button, depending on whether it is active
-    private void setButton(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {
+    private void setButtonColor(ImageView iv, boolean isActive, int strokeResId, int fillResId, int activeColor) {
         iv.setImageResource(isActive ? fillResId : strokeResId);
         iv.setColorFilter(ContextCompat.getColor(context, isActive ? activeColor : R.color.medium_gray));
     }
-
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
@@ -102,8 +99,6 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         //bind the tweet with view holder
         holder.bind(tweet);
     }
-
-
 
     //clean all element of the recycler view
     public void clear(){
@@ -138,7 +133,10 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
 
         public ViewHolder(@NonNull View itemView)  {
             super(itemView);
-
+            setView();
+            itemView.setOnClickListener(this);
+        }
+        public void setView(){
             ivProfileImage = itemView.findViewById(R.id.ivProfileImage);
             tvBody = itemView.findViewById(R.id.tvBody);
             tvScreenName = itemView.findViewById(R.id.tvScreenName);
@@ -150,25 +148,23 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             tvRetweetCount = itemView.findViewById(R.id.tvRetweetCount);
             tvFavoriteCount = itemView.findViewById(R.id.tvFavoriteCount);
             tvUsername = itemView.findViewById(R.id.tvUsername);
-            itemView.setOnClickListener(this);
         }
 
         public void bind(Tweet tweet) {
             tvBody.setText(tweet.getBody());
-            tvScreenName.setText("@" +tweet.getUser().getScreenName());
+            tvScreenName.setText("@" + tweet.getUser().getScreenName());
             Glide.with(context).load(tweet.getUser().getProfileImageUrl()).into(ivProfileImage);
             tvTimeStamp.setText(tweet.getRelativeTimeAgo(tweet.getCreatedAt()));
             tvUsername.setText( tweet.getUser().getName());
             tvFavoriteCount.setText(String.format("%d", tweet.getLikeCount()));
             tvRetweetCount.setText(String.format("%d", tweet.getRetweetCount()));
-            //set color of like button
-            setButton(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
 
+            //set color of like button
+            setButtonColor(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
             //set color of retweet
-            setButton(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+            setButtonColor(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
 
             // populate any embedded media with glide
-            Log.i("hello",tweet.getMedia());
             if (!tweet.getMedia().equals("")) { //media exist
 
                 Glide.with(context)
@@ -182,21 +178,15 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             ivReply.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-
                     // compose a tweet when reply button is clicked
                     if (context instanceof TimelineActivity) {
                         String reply = tvScreenName.getText().toString();
                         ((TimelineActivity) context).composeReply(reply);
                     }
-                    else {
-                        Log.d("TweetAdapter", "context is not TimelineActivity");
-                    }
                 }
             });
 
         }
-
-
 
         @Override
         public void onClick(View v) {
@@ -216,4 +206,5 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
         }
 
     }
+
 }
