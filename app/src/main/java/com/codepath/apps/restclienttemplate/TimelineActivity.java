@@ -50,7 +50,7 @@ public class TimelineActivity extends AppCompatActivity {
 
         Toolbar toolbar = binding.toolbar;
         setSupportActionBar(toolbar);
-
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
         client = TwitterApp.getRestClient(this);
 
 

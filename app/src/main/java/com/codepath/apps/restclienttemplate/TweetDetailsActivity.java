@@ -119,8 +119,8 @@ public class TweetDetailsActivity extends AppCompatActivity {
         tvTimeStamp.setText(tweet.getRelativeTimeAgo(tweet.getCreatedAt()));
         setButtonColor(ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
         setButtonColor(ivRetweet, tweet.isRetweeted(), R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
-        tvFavoriteCount.setText(String.format("%d Likes", tweet.getLikeCount()));
-        tvRetweetCount.setText(String.format("%d Retweets", tweet.getRetweetCount()));
+        tvFavoriteCount.setText(String.format("%d Likes", tweet.getRetweetCount()));
+        tvRetweetCount.setText(String.format("%d Retweets", tweet.getLikeCount()));
         Glide.with(this)
                 .load(tweet.getUser().getProfileImageUrl())
                 //.bitmapTransform(new RoundedCornersTransformation(this, 30, 0))
