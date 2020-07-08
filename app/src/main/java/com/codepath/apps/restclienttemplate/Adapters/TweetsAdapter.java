@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -48,18 +49,20 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             @Override
             public void onClick(View v) {
                 int position = viewHolder.getAdapterPosition();
-                Tweet tweet = tweets.get(position);
+                final Tweet tweet = tweets.get(position);
                 tweet.switchFavorite(context, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
+                        setButtonColor(viewHolder.ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
+                        viewHolder.tvFavoriteCount.setText(String.format("%d", tweet.getLikeCount()));
                     }
 
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                        Toast.makeText(context, "Like can't be process at this moment", Toast.LENGTH_SHORT).show();
                     }
                 });
-                setButtonColor(viewHolder.ivFavorite, tweet.isLiked(), R.drawable.ic_vector_heart_stroke, R.drawable.ic_vector_heart, R.color.medium_red);
-                viewHolder.tvFavoriteCount.setText(String.format("%d", tweet.getLikeCount()));
+
             }
         });
         // enable retweet button
@@ -67,21 +70,22 @@ public class TweetsAdapter extends RecyclerView.Adapter<TweetsAdapter.ViewHolder
             @Override
             public void onClick(View v) {
                 int position = viewHolder.getAdapterPosition();
-                Tweet tweet = tweets.get(position);
+                final Tweet tweet = tweets.get(position);
                 tweet.switchRetweet(context, new JsonHttpResponseHandler() {
                     @Override
                     public void onSuccess(int statusCode, Headers headers, JSON json) {
-                        Log.d(TAG, "onSuccess: retweet");
+                        setButtonColor(viewHolder.ivRetweet, tweet.isRetweeted(),
+                                R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
+                        viewHolder.tvRetweetCount.setText(String.format("%d", tweet.getRetweetCount()));
                     }
 
                     @Override
                     public void onFailure(int statusCode, Headers headers, String response, Throwable throwable) {
+                        Toast.makeText(context, "Retweeting is unable at this moment", Toast.LENGTH_SHORT).show();
 
                     }
                 });
-                setButtonColor(viewHolder.ivRetweet, tweet.isRetweeted(),
-                        R.drawable.ic_vector_retweet_stroke, R.drawable.ic_vector_retweet, R.color.medium_green);
-                viewHolder.tvRetweetCount.setText(String.format("%d", tweet.getRetweetCount()));
+
             }
         });
         return viewHolder;
